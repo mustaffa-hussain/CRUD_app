@@ -43,13 +43,13 @@ ___
 
 ## Data to be send with the requests -
 
-`/products` - GET
-    The endpoint to retrive data from DB.
-    No need data need to be send, its send all the product. the functionality can further be improved to send specific data.
+`/products` - GET <br>
+    The endpoint to retrive data from DB.<br>
+    It send all the product data. the functionality can further be improved to send specific data.
 
 ____
-`/addproduct` - POST
-    The endpoint to add entry to DB.
+`/addproduct` - POST <br>
+    The endpoint to add entry to DB.<br>
     You can add document to MongoDB. Send in the JSON in the body of the request.
     Note: these are necessary keys. If not send, the end point returns an error. other keys can be added along with these keys.
     
@@ -65,8 +65,8 @@ ____
 
 
 _____
-`/updateproduct` -PATCH
-    The endpoint to update entry in DB.
+`/updateproduct` -PATCH <br>
+    The endpoint to update entry in DB.<br>
     You can update the entries in db by sending. Send the JSON of 'which' and 'new' in the body of request. 
     Key -> which is used to identify the document in db that is to be updated.
     key -> new is used to update the entry
@@ -78,7 +78,7 @@ _____
 
 ____
 
-`/deleteproduct` - DELETE
+`/deleteproduct` - DELETE <br>
     The endpoint to delete an entry from DB. It take the id to delete the document.
     Send the JSOn in the body.
     
