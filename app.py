@@ -1,154 +1,142 @@
-#Add Flask-PyMongo to our app
-from flask import Flask, jsonify, request, redirect
-from flask_pymongo import PyMongo
+#librarires
+from flask import Flask,jsonify,request,Response
+from bson import json_util
+import json
 
+#custom scripts
+from db_functions import database         #db functions script
 
 app = Flask(__name__)
-app.config["MONGO_URI"] = "mongodb+srv://greendeck:wFiLryTvunPBa6sx@mustaffa-app.ddqdx.mongodb.net/testdb_4_green_deck?retryWrites=true&w=majority"
-mongo = PyMongo(app)
 
-#Configuring collection name we are going to work with
-#db_operations = mongo.db.<COLLECTION_NAME>
-db_operations = mongo.db.greendeck_data 
+db = database()                           #gets the db connection object
 
 
-@app.route('/test')
-def home():
+
+@app.route('/products',methods=["GET"])
+def root():
     '''
-    initail test route fn
+    Function to get the results from DB.
+    Only 'GET' method is needed as only fetching is happeneing.
+
     '''
-    print("hello mustaffa, lets get coding now")
-    result={"returned output":"all went well"}
-    return result
+    try:
+        _data = db.get()
 
+        return Response(
+            json_util.dumps(_data).replace("NaN", "null"),
+            mimetype='application/json'
+        )
 
-@app.route('/create/<int:year>/<int:month>/<title>')
-def create():
-    new_user = {'Name' : 'xyz', 'Age' : 20}
-    db_operations.insert_one(new_user)
-    #print(user['Name'],'Created successfully')
-    result = {'result' : 'Created successfully'}
-    return jsonify(result)
-    # return result
+    except Exception as e:
+        return jsonify({"error": str(e)}),500
 
 
 
-#CRUD Operations
-
-#Create
-
-@app.route('/create')
-def create():
-    new_user = {'Name' : 'xyz', 'Age' : 20}
-    db_operations.insert_one(new_user)
-    #print(user['Name'],'Created successfully')
-    result = {'result' : 'Created successfully'}
-    return jsonify(result)
-    # return result
-
-
-@app.route('/create-many')
-def create_many():
-    new_user_1 = {'Name' : 'xyz1', 'Age' : 10}
-    new_user_2 = {'Name' : 'xyz2', 'Age' : 20}
-    new_user_3 = {'Name' : 'xyz3', 'Age' : 30}
-    new_users = [new_user_1, new_user_2, new_user_3]
-    db_operations.insert_many(new_users)
-    result = {'result' : 'Created successfully'}
-    return result
-
-#Read
-
-@app.route('/read')
-def read_all():
+# create new product
+@app.route("/addproduct",methods = ["POST"])
+def insertProduct():
     '''
-    the funtion return all the documents in the collection.
-    input: None
-    output: dict 
+    Function to add entry to DB.
+    Only 'POST' used as whole object is entered.
+
     '''
-    users = db_operations.find()
-    output = [{'Name' : user['name'], 'Brand_name' : user['brand_name']} for user in users]
-    #print(output)
-    return jsonify(output)
 
-@app.route('/read-with-filter')
-def read_with_filter():
-    filt = {'Name' : 'xyz'}
-    users = db_operations.find(filt)
-    output = [{'Name' : user['Name'], 'Age' : user['Age']} for user in users]
-    #print(output)
-    return jsonify(output)
+    payload = request.get_json()
 
-@app.route('/read-one')
-def read_one():
-    filt = {'Name' : 'xyz'}
-    user = db_operations.find_one(filt)
-    output = {'Name' : user['Name'], 'Age' : user['Age']}
-    #print(output)
-    return jsonify(output)
+    try:
+        name = payload["name"]
+        brand_name = payload["brand_name"]
+        regular_price_value = payload["regular_price_value"]
+        offer_price_value = payload["offer_price_value"]
+        currency = payload["currency"]
 
-#Update
+        image_url = payload["image_url"]
 
-@app.route('/update')
-def update():
-    updated_user = {"$set": {'Age' : 30}}
-    filt = {'Name' : 'xyz'}
-    db_operations.update_one(filt, updated_user)
-    result = {'result' : 'Updated successfully'}
-    return result
+        classification_l1 = payload.get("classification_l1", "")
+        classification_l2 = payload.get("classification_l2", "")
+        classification_l3 = payload.get("classification_l3", "")
+        classification_l4 = payload.get("classification_l4", "")
+    except KeyError:
+        return jsonify({"error":"make sure all params are given"})
 
-@app.route('/update-many')
-def update_many():
-    updated_user = {"$set": {'Age' : 30}}
-    filt = {'Name' : 'xyz'}
-    db_operations.update_many(filt, updated_user)
-    result = {'result' : 'Updated successfully'}
-    return result
+    insert_query = {
+            "name":name,
+            "brand_name":brand_name,
+            "regular_price_value": regular_price_value,
+            "offer_price_value":offer_price_value,
+            "currency":currency,
+            "image_url":image_url,
+            "classification_l1":classification_l1,
+            "classification_l2":classification_l2,
+            "classification_l3":classification_l3,
+            "classification_l4":classification_l4
+            }
+    res = db.insert(insert_query)
+    print(res.inserted_id)
 
-@app.route('/update-if-exist-or-insert')
-def update_if_exist_or_insert():
-    updated_user = {"$set": {'Age' : 30}}
-    filt = {'Name' : 'xyz'}
-    db_operations.update_one(filt, updated_user, upsert=True)
-    result = {'result' : 'Done successfully'}
-    return result
-
-#Delete
-
-@app.route('/delete/<id>', methods=['DELETE'])
-def delete(id):
-    filt = {'Name' : 'xyz'}
-    db_operations.delete_one(filt)
-    result = {'result' : 'Deleted successfully'}
-    return result
-
-@app.route('/delete-many')
-def delete_many():
-    filt = {'Name' : 'xyz'}
-    db_operations.delete_many(filt)
-    result = {'result' : 'Deleted successfully'}
-    return result
-
-#Saving and retrieving files
+    return jsonify({"status": "success", "id": str(res.inserted_id)})
 
 
+@app.route("/deleteproduct", methods= ["DELETE"])
+def delete_product():
+    '''
+    Function to delete an entry from DB.
+    only 'DELETE' method used to delete whole entry from db.
+    '''
+    _data = request.get_json()
+    try:
+        _delid = _data["id"]
 
-@app.route('/save-file', methods=['POST'])
-def save_file():
-    if 'new_file' in request.files:
-        new_file = request.files['new_file']
-        mongo.save_file(new_file.filename, new_file)
-        data = {'Name' : request.values.get('name'), 'File Name' : new_file.filename}
-        db_operations.insert(data)
-    return redirect('/')
+    except KeyError:
+        return jsonify({"error":"provide id to delete it"})
+    # print(db.find_one(_delid))
 
-@app.route('/retrieve-file/<name>')
-def retrieve_file(name):
-    filt = {'Name' : name}
-    f = db_operations.find_one(filt)
-    file_name = f['File Name']
-    return mongo.send_file(file_name)
+    delete_result = db.find_one_and_delete(_delid)
 
-if __name__ == '__main__':
-    app.run(debug=True, port=5001)
+    if delete_result:
+        return Response(
+            json_util.dumps({"status": "success", "data": delete_result}).replace("NaN", "null"),
+            mimetype='application/json'
+        )
+
+    else:
+
+        return jsonify({"status": "denied", "reason": "product not found"})
+
+
+@app.route("/updateproduct", methods=["PATCH"])
+def update_product():
+    '''
+    Function to update a an entry from DB.
+    Method Patch used as partial update/complete update both are possible.
+    '''
+    _json_data = request.get_json()
+    try:
+
+        old_data  = _json_data["which"]
+        new_data   = _json_data["new"]
+    except KeyError:
+
+        return jsonify({"status":"denied","reason":"required value not provied"})
+
+    updated_result  = db.find_one_and_update(old_data,new_data)
+    if updated_result:
+        return Response(
+            json_util.dumps({"status": "success", "data": updated_result}).replace(
+                "NaN", "null"),
+            mimetype='application/json'
+        )
+
+    else:
+
+        return jsonify({"status": "denied", "reason": "product not found"})
+
+
+
+
+
+
+app.run(debug=True,port=5010)
+
+
 
