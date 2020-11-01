@@ -67,8 +67,8 @@ ____
 _____
 `/updateproduct` -PATCH <br>
     The endpoint to update entry in DB.<br>
-    You can update the entries in db by sending. Send the JSON of 'which' and 'new' in the body of request. 
-    Key -> which is used to identify the document in db that is to be updated.
+    You can update the entries in db by sending. Send the JSON of 'which' and 'new' in the body of request. <br>
+    Key -> which is used to identify the document in db that is to be updated.<br>
     key -> new is used to update the entry
     
     An example json : 
