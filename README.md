@@ -41,7 +41,7 @@ ___
 ```
 
 
-## ENDPOINTS Data to be send with request -
+## Data to be send with the requests -
 
 `/products` - GET
     The endpoint to retrive data from DB.
@@ -81,7 +81,7 @@ ____
 `/deleteproduct` - DELETE
     The endpoint to delete an entry from DB. It take the id to delete the document.
     Send the JSOn in the body.
-____
+    
     An example json : 
     {"id":"5f9ec0ffc675c3202c31656f"}
 
