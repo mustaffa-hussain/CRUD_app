@@ -87,5 +87,5 @@ ____
 
 ___
 
-## Screenshots are in Screenshot folder. check them out for working samples.
+## Screenshots are in `Screenshots` folder. check them out for working samples.
 
