@@ -85,10 +85,7 @@ ____
     An example json : 
     {"id":"5f9ec0ffc675c3202c31656f"}
 
-
-
-
-
 ___
 
+## Screenshots are in Screenshot folder. check them out for working samples.
 
